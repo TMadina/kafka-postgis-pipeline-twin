@@ -1,0 +1,10 @@
+# Создаем правильный .gitignore
+cat <<EOT > .gitignore
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+check_kafka.py
+fix_distance.py
+EOT
