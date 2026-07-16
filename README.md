@@ -40,10 +40,68 @@ Unlike typical monitoring apps that treat GIS as flat map pins, this system util
       SELECT MIN(ST_Distance(p.geom::geography, w.geom::geography))
       FROM water_geometry w
   );
-Automated Geofencing (Dunkers Identification): Segments positioned within a strict ≤ 15.0 meters buffer zone of any water body are automatically classified as is_dunker = TRUE (High-risk underwater/under-river crossings).🚨 Industrial Logic: Anti-Alarm Fatigue SystemTo prevent operators from becoming desensitized to high volumes of trivial alerts, the Decision Engine applies an environmental context matrix:Standard Segment Anomaly: High vibration (>80%) on a regular dry land segment triggers a Low-Priority Warning (⚠️) $\rightarrow$ schedule maintenance.Critical Segment Anomaly: High vibration (>80%) on an identified Water Crossing (Dunker) triggers an Immediate Ecological Emergency Alert (🚨🚨🚨) $\rightarrow$ risk of river pollution, automatic escalation.📊 Dashboard Preview🚀 Getting Started & InstallationPrerequisitesDocker & Docker Compose installed.Python 3.10+ installed locally.1. Spin up InfrastructureRun the spatial database and Kafka cluster via Docker Compose:Bashdocker-compose up -d
-2. Configure EnvironmentCreate a .env file in the root directory based on the provided example to securely store your database and Kafka credentials:Bashcp .env.example .env
-Open the newly created .env file and fill in your actual infrastructure passwords.3. Initialize GIS DatabaseLoad the pipeline and water body spatial data, create tables, and execute spatial indexing:Bashpython geometry_init.py
-4. Run the Pipeline StreamOpen separate terminal tabs and launch the core services:Bash# Start the telemetry stream receiver (Consumer)
+
+```
+
+* **Automated Geofencing (Dunkers Identification):** Segments positioned within a strict ≤ 15.0 meters buffer zone of any water body are automatically classified as `is_dunker = TRUE` (High-risk underwater/under-river crossings).
+
+### 🚨 Industrial Logic: Anti-Alarm Fatigue System
+
+To prevent operators from becoming desensitized to high volumes of trivial alerts, the Decision Engine applies an environmental context matrix:
+
+* **Standard Segment Anomaly:** High vibration (>80%) on a regular dry land segment triggers a Low-Priority Warning (⚠️) $\rightarrow$ schedule maintenance.
+* **Critical Segment Anomaly:** High vibration (>80%) on an identified Water Crossing (Dunker) triggers an Immediate Ecological Emergency Alert (🚨🚨🚨) $\rightarrow$ risk of river pollution, automatic escalation.
+
+---
+
+## 📊 Dashboard Preview
+
+![Dashboard UI](images/dashboard.png)
+
+---
+
+## 🚀 Getting Started & Installation
+
+### Prerequisites
+
+* Docker & Docker Compose installed.
+* Python 3.10+ installed locally.
+
+### 1. Spin up Infrastructure
+
+Run the spatial database and Kafka cluster via Docker Compose:
+
+```bash
+docker-compose up -d
+
+```
+
+### 2. Configure Environment
+
+Create a `.env` file in the root directory based on the provided example to securely store your database and Kafka credentials:
+
+```bash
+cp .env.example .env
+
+```
+
+> Open the newly created `.env` file and fill in your actual infrastructure passwords.
+
+### 3. Initialize GIS Database
+
+Load the pipeline and water body spatial data, create tables, and execute spatial indexing:
+
+```bash
+python geometry_init.py
+
+```
+
+### 4. Run the Pipeline Stream
+
+Open separate terminal tabs and launch the core services:
+
+```bash
+# Start the telemetry stream receiver (Consumer)
 python sensor_consumer.py
 
 # Start the IoT edge sensor network (Producer)
@@ -51,4 +109,16 @@ python producer.py
 
 # Launch the Digital Twin live UI
 streamlit run dashboard.py
-🔮 Future Roadmap (Scale Up Intentions)To evolve this Minimum Viable Product (MVP) into a production-scale smart city / industrial platform, the following upgrades are planned:MQTT Telemetry Ingestion: Introduce an EMQX/Mosquitto Broker at the edge layer to handle real-world lightweight sensor protocols.FastAPI Ingestion Gateway: Deploy a high-performance FastAPI proxy layer before Kafka to handle device authentication, security tokens, and schema validation (Pydantic).Time-Series State Management: Integrate TimescaleDB alongside PostGIS to isolate raw telemetry logs history for predictive GeoAI failure modeling without slowing down transactional spatial tables.WebSockets Stream: Replace UI interval fetching with true duplex WebSockets to push event-driven alerts instantly to the client side.
+
+```
+
+---
+
+## 🔮 Future Roadmap (Scale Up Intentions)
+
+To evolve this Minimum Viable Product (MVP) into a production-scale smart city / industrial platform, the following upgrades are planned:
+
+* **MQTT Telemetry Ingestion:** Introduce an EMQX/Mosquitto Broker at the edge layer to handle real-world lightweight sensor protocols.
+* **FastAPI Ingestion Gateway:** Deploy a high-performance FastAPI proxy layer before Kafka to handle device authentication, security tokens, and schema validation (Pydantic).
+* **Time-Series State Management:** Integrate TimescaleDB alongside PostGIS to isolate raw telemetry logs history for predictive GeoAI failure modeling without slowing down transactional spatial tables.
+* **WebSockets Stream:** Replace UI interval fetching with true duplex WebSockets to push event-driven alerts instantly to the client side.
