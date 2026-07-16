@@ -1,147 +1,54 @@
-# Pipeline Digital Twin Monitoring with Kafka & PostGIS
+# 🛰️ Real-Time Oil Pipeline Digital Twin & Eco-Monitoring System
 
-A geospatial Digital Twin prototype that simulates real-time pipeline monitoring using **Kafka**, **PostGIS**, and **Python**.
+An enterprise-grade, event-driven Digital Twin platform designed for real-time telemetry processing, geospatial analysis, and environmental risk mitigation for an underground crude oil pipeline in Alberta, Canada.
 
-The project demonstrates how streaming IoT sensor data can be combined with spatial analysis to identify pipeline segments that require attention based on environmental conditions and simulated sensor measurements.
-
----
-
-## Project Overview
-
-This project simulates a simplified pipeline monitoring system:
-
-- Pipeline geometry is stored in **PostGIS**
-- Pipeline is divided into segments
-- A Kafka producer continuously generates sensor readings
-- A Kafka consumer processes incoming events
-- Data is written back to PostgreSQL/PostGIS
-- A live dashboard displays the current state of the pipeline
-
-The goal is to demonstrate a realistic geospatial data pipeline rather than build a production-ready SCADA system.
+This project implements an **Event-Driven Architecture (EDA)** to ingest high-frequency IoT sensor data, process it through a streaming backbone, perform live spatial queries against a GIS database, and visualize assets and critical alarms on an interactive dashboard.
 
 ---
 
-## Architecture
+## 🏗️ System Architecture & Data Journey
 
-```
-Pipeline Geometry
-       │
-       ▼
-  PostGIS Database
-       │
-       ▼
-Geometry Initialization
-       │
-       ▼
-Kafka Producer
-(Simulated Sensors)
-       │
-       ▼
-Kafka Topic
-       │
-       ▼
-Kafka Consumer
-       │
-       ▼
-PostGIS
-       │
-       ▼
-Live Dashboard
-```
+The platform decouples data generation, message streaming, business logic execution, and visualization into independent architectural layers:
+
+1. **IoT Edge Layer (Simulation):** A multi-threaded producer emulates physical telemetry (pressure, temperature, vibration) from edge sensors distributed along pipeline segments.
+2. **Event Streaming Backbone (Apache Kafka):** High-throughput distributed message broker that ingests raw telemetry into dedicated Kafka topics, ensuring zero data loss and fault tolerance.
+3. **Processing & Analytics Service (Consumer):** A continuous data processor that consumes telemetry streams, parses incoming payloads, correlates them with structural state, and updates the state store.
+4. **GIS Intelligence Layer (PostgreSQL + PostGIS):** An enterprise spatial database handling spatial joins, projection systems, and geographic indexing. It calculates high-precision proximity to water bodies on the fly.
+5. **Real-Time Operational UI (Streamlit + Folium):** A live-updating digital twin cockpit visualizing asset geometries, performance trends, and dynamic risk categories without manual page refreshes.
 
 ---
 
-## Features
+## 🛠️ Tech Stack
 
-- Real-time IoT sensor simulation
-- Apache Kafka message streaming
-- Spatial data storage with PostGIS
-- Pipeline segmentation
-- Live monitoring dashboard
-- Randomized pressure, temperature and vibration values
-- Alert-ready architecture for future extensions
-
----
-
-## Technologies
-
-- Python
-- PostgreSQL
-- PostGIS
-- Apache Kafka
-- psycopg2
-- pandas
-- matplotlib
+- **Backend & Scripting:** Python 3.14 (psycopg2, kafka-python, pandas)
+- **Message Broker:** Apache Kafka
+- **Spatial DBMS:** PostgreSQL 16 + PostGIS 3.4
+- **Interactive UI:** Streamlit, Folium
+- **Infrastructure:** Docker & Docker Compose
+- **GIS Desktop Data Prep:** QGIS
 
 ---
 
-## Project Structure
+## 🌍 Advanced GIS & Spatial Logic (PostGIS)
 
-```
-.
-├── geometry_init.py      # Creates pipeline geometry and segments
-├── producer.py           # Simulates IoT sensor data
-├── sensor_consumer.py    # Consumes Kafka messages and updates database
-├── dashboard.py          # Live monitoring dashboard
-└── README.md
-```
+Unlike typical monitoring apps that treat GIS as flat map pins, this system utilizes heavy relational spatial analytics:
+- **Spatial Segmentation:** The pipeline profile (originally raw GeoJSON) is programmatically sliced into standalone monitored segments (`s1, s2, s3...`) with dedicated tracking coordinates.
+- **Dynamic Proximity Analysis:** Uses PostGIS geographic projection transformations to calculate exact distances from pipeline infrastructure to Alberta's hydrographic network (rivers/lakes):
+  ```sql
+  UPDATE pipeline_segments p
+  SET water_distance = (
+      SELECT MIN(ST_Distance(p.geom::geography, w.geom::geography))
+      FROM water_geometry w
+  );
+Automated Geofencing (Dunkers Identification): Segments positioned within a strict ≤ 15.0 meters buffer zone of any water body are automatically classified as is_dunker = TRUE (High-risk underwater/under-river crossings).🚨 Industrial Logic: Anti-Alarm Fatigue SystemTo prevent operators from becoming desensitized to high volumes of trivial alerts, the Decision Engine applies an environmental context matrix:Standard Segment Anomaly: High vibration (>80%) on a regular dry land segment triggers a Low-Priority Warning (⚠️) $\rightarrow$ schedule maintenance.Critical Segment Anomaly: High vibration (>80%) on an identified Water Crossing (Dunker) triggers an Immediate Ecological Emergency Alert (🚨🚨🚨) $\rightarrow$ risk of river pollution, automatic escalation.📊 Dashboard Preview🚀 Getting Started & InstallationPrerequisitesDocker & Docker Compose installed.Python 3.10+ installed locally.1. Spin up InfrastructureRun the spatial database and Kafka cluster via Docker Compose:Bashdocker-compose up -d
+2. Configure EnvironmentCreate a .env file in the root directory based on the provided example to securely store your database and Kafka credentials:Bashcp .env.example .env
+Open the newly created .env file and fill in your actual infrastructure passwords.3. Initialize GIS DatabaseLoad the pipeline and water body spatial data, create tables, and execute spatial indexing:Bashpython geometry_init.py
+4. Run the Pipeline StreamOpen separate terminal tabs and launch the core services:Bash# Start the telemetry stream receiver (Consumer)
+python sensor_consumer.py
 
----
+# Start the IoT edge sensor network (Producer)
+python producer.py
 
-# Workflow
-
-1. Initialize the pipeline geometry.
-2. Store pipeline segments in PostGIS.
-3. Start Kafka.
-4. Run the producer to generate sensor data.
-5. Run the consumer to process messages.
-6. Launch the dashboard for real-time visualization.
-
----
-
-# Dashboard
-
-
-![Dashboard](images/dashboard.png)
-
----
-
-# Example Sensor Data
-
-| Timestamp | Segment | Pressure | Temperature | Vibration |
-|-----------|---------|----------|-------------|-----------|
-| 2026-07-12 14:03 | 15 | 71.3 psi | 24.5°C | 0.18 |
-| 2026-07-12 14:04 | 16 | 74.1 psi | 25.2°C | 0.15 |
-| 2026-07-12 14:05 | 17 | 89.8 psi | 30.1°C | 0.46 |
-
----
-
-# Future Improvements
-
-- MQTT integration
-- Real sensor devices
-- WebSocket streaming
-- Docker Compose deployment
-- Grafana monitoring
-- Automatic anomaly detection
-- Interactive web map (Leaflet/Folium)
-
----
-
-# Purpose
-
-This project was created as a portfolio project to demonstrate practical skills in:
-
-- GIS development
-- Spatial databases
-- Real-time data streaming
-- Python backend development
-- Geospatial analytics
-
----
-
-## Author
-
-**Madina Temirova**
-
-GIS Developer | Python | PostGIS | Kafka
+# Launch the Digital Twin live UI
+streamlit run dashboard.py
+🔮 Future Roadmap (Scale Up Intentions)To evolve this Minimum Viable Product (MVP) into a production-scale smart city / industrial platform, the following upgrades are planned:MQTT Telemetry Ingestion: Introduce an EMQX/Mosquitto Broker at the edge layer to handle real-world lightweight sensor protocols.FastAPI Ingestion Gateway: Deploy a high-performance FastAPI proxy layer before Kafka to handle device authentication, security tokens, and schema validation (Pydantic).Time-Series State Management: Integrate TimescaleDB alongside PostGIS to isolate raw telemetry logs history for predictive GeoAI failure modeling without slowing down transactional spatial tables.WebSockets Stream: Replace UI interval fetching with true duplex WebSockets to push event-driven alerts instantly to the client side.
